@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 
 
 base_url = "https://api.groupme.com/v3"
-error = False
 
 while True:
 	try:
