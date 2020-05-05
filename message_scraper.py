@@ -38,7 +38,11 @@ def current_member_IDs(base_url, group_id, token, optional_members = False):
 	response = requests.get(base_url + "/groups/" + str(group_id), params = {"token" : token, "id" : group_id})
 	response = response.json()["response"]["members"]
 	member_dict = {}
-	if optional_members:
+	#if spaces after commas then deletes those spaces
+	for i in range(len(optional_members)):
+		if optional_members[i][0] == " ":
+			optional_members[i] = optional_members[i][1:]
+	if type(optional_members) == list:
 		for member in response:	
 			if member["nickname"] in optional_members:
 				#uses nickname instead of name as they are usually the same value and doesn't add Groupme as a person

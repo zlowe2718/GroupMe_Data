@@ -28,10 +28,11 @@ while True:
 while True:
 	try:
 		#TODO: fix optional members since inputting [name1, name2] does not store as list
-		members = input("Please enter group members as a list to evaulate.  Leave blank for all current members, or write 'all' for all members: ")
+		members = input("Please enter group members as a list to evaulate as comma separated values.  Leave blank for all current members, or write 'all' for all members: ")
 		all_members = False
-		if type(members) == list:
-			member_id_dict = ms.current_member_IDs(base_url, group_id, token, members)
+
+		if "," in members:
+			member_id_dict = ms.current_member_IDs(base_url, group_id, token, members.split(","))
 			break
 		elif members == "all":
 			all_members = True
@@ -79,14 +80,11 @@ for i in range(message_total // 100 + 1):
 			likes_per_mess_type[message["name"][:14]] = {"messages" : 0, "images" : 0, "links" : 0, "mentions" : 0}
 
 			#updates bayesian dictionary for new member
-			#---------------------
-			#TODO: Here
 			ms.add_name_to_bay_dict(bayesian_dict, message["name"][:14])
-			#---------------------
 		
 		# this is for updating total likes in chat and updating the bayesian dictionary respectively
 		if len(message["favorited_by"]) > max_likes:
-			max_likes = message["favorited_by"]
+			max_likes = len(message["favorited_by"])
 			ms.add_extra_likes_field(bayesian_dict, max_likes)
 
 
