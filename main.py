@@ -8,22 +8,42 @@ import matplotlib.pyplot as plt
 
 
 base_url = "https://api.groupme.com/v3"
+error = False
 
-
-token = input("Enter your token id: ")
-
-group = input("Please select a group from the list" + str(ms.get_groups(base_url, token)) + ": ")
-group_id = ms.get_groupID(base_url, group, token)
-
-members = input("Please enter group members as a list to evaulate.  Leave blank for all current members, or write 'all' for all members: ")
-all_members = False
-if type(members) == list:
-	member_id_dict = ms.current_member_IDs(base_url, group_id, token, members)
-elif members == "all":
-	all_members = True
-	member_id_dict = ms.current_member_IDs(base_url,group_id, token)
-else:
-	member_id_dict = ms.current_member_IDs(base_url,group_id, token)
+while True:
+	try:
+		token = input("Enter your token id: ")
+		ms.get_groups(base_url, token)
+		break
+	except KeyError:
+		print("Please enter a valid token")
+		continue
+while True:
+	group = input("Please select a group from the list" + str(ms.get_groups(base_url, token)) + ": ")
+	group_id = ms.get_groupID(base_url, group, token)
+	if group_id == -1:
+		print("Please enter a group from the list. You may have spelled one wrong")
+		continue
+	else:
+		break
+while True:
+	try:
+		#TODO: fix optional members since inputting [name1, name2] does not store as list
+		members = input("Please enter group members as a list to evaulate.  Leave blank for all current members, or write 'all' for all members: ")
+		all_members = False
+		if type(members) == list:
+			member_id_dict = ms.current_member_IDs(base_url, group_id, token, members)
+			break
+		elif members == "all":
+			all_members = True
+			member_id_dict = ms.current_member_IDs(base_url,group_id, token)
+			break
+		else:
+			member_id_dict = ms.current_member_IDs(base_url,group_id, token)
+			break
+	except KeyError:
+		print("You may have spelled a member wrong.  Please enter in the form of [member1,member2] etc.")
+		continue
 
 message_dict = ms.ini_message_dict(member_id_dict)
 likes_dict = ms.ini_likes_dict(member_id_dict)
