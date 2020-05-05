@@ -8,8 +8,9 @@ import matplotlib.pyplot as plt
 
 
 base_url = "https://api.groupme.com/v3"
-
+#starts prompting user for information
 while True:
+	#asks for user token
 	try:
 		token = input("Enter your token id: ")
 		ms.get_groups(base_url, token)
@@ -18,6 +19,7 @@ while True:
 		print("Please enter a valid token")
 		continue
 while True:
+	#asks for a group in the list
 	group = input("Please select a group from the list" + str(ms.get_groups(base_url, token)) + ": ")
 	group_id = ms.get_groupID(base_url, group, token)
 	if group_id == -1:
@@ -27,7 +29,7 @@ while True:
 		break
 while True:
 	try:
-		#TODO: fix optional members since inputting [name1, name2] does not store as list
+		#asks for members to evaulate
 		members = input("Please enter group members as a list to evaulate as comma separated values.  Leave blank for all current members, or write 'all' for all members: ")
 		all_members = False
 
@@ -38,8 +40,11 @@ while True:
 			all_members = True
 			member_id_dict = ms.current_member_IDs(base_url,group_id, token)
 			break
-		else:
+		elif members == "\n":
 			member_id_dict = ms.current_member_IDs(base_url,group_id, token)
+			break
+		else:
+			member_id_dict = ms.current_member_IDs(base_url, group_id, token, members.split(","))
 			break
 	except KeyError:
 		print("You may have spelled a member wrong.  Please enter in the form of [member1,member2] etc.")
@@ -70,7 +75,10 @@ for i in range(message_total // 100 + 1):
 
 	#data collection for 100 messages at a time start
 	for message in responseJson["messages"]:
-		if not message["sender_id"] in member_id_dict and all_members and not message["sender_id"] == "system" and not message["sender_id"] == "calendar":
+
+		if (not message["sender_id"] in member_id_dict and all_members and not message["sender_id"] == "system"
+		 and not message["sender_id"] == "calendar") or (not message["sender_id"] in member_id_dict 
+		 and message["name"] in members):
 			#establishes new member in the approved members list and limits to 13 characters
 			member_id_dict[message["sender_id"]] = message["name"][:14]
 
@@ -85,8 +93,16 @@ for i in range(message_total // 100 + 1):
 		# this is for updating total likes in chat and updating the bayesian dictionary respectively
 		if len(message["favorited_by"]) > max_likes:
 			max_likes = len(message["favorited_by"])
-			ms.add_extra_likes_field(bayesian_dict, max_likes)
+			#checks to see if it exists in case a user was inputted who hasn't 
+			#shown up in the messages log yet
+			if len(bayesian_dict) != 0:
+				ms.add_extra_likes_field(bayesian_dict, max_likes)
 
+		#add extra likes to bayesian dictionary after new user has been added
+		#and there were more likes than fields currently
+		if len(bayesian_dict) != 0:
+			if len(list(bayesian_dict.values())[0]) < max_likes:
+				ms.add_extra_likes_field(bayesian_dict, max_likes)
 
 		#this segment is for messages data and likes recieved
 		if message["sender_id"] in member_id_dict:			
