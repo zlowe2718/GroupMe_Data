@@ -39,6 +39,7 @@ def current_member_IDs(base_url, group_id, token, optional_members = False):
 	response = response.json()["response"]["members"]
 	member_dict = {}
 	#if spaces after commas then deletes those spaces
+	
 	for i in range(len(optional_members)):
 		if optional_members[i][0] == " ":
 			optional_members[i] = optional_members[i][1:]
